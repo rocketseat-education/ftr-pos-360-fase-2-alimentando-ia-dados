@@ -44,6 +44,7 @@ function createPurchases(customer) {
     for (let i = 0; i < nPurchases; i++) {
         purchases.push(
             {
+                id: faker.string.uuid(),
                 customerId: customer.id,
                 product: faker.commerce.productName(),
                 price: faker.commerce.price(),
@@ -61,11 +62,11 @@ let purchases = [];
 
 const customers = [];
 
-for (let i=0; i<100; i++) {
+for (let i = 0; i < 100; i++) {
     customers.push(createCustomer());
 }
 
-for(let customer of customers){
+for (let customer of customers) {
     purchases = purchases.concat(createPurchases(customer));
 }
 
@@ -118,3 +119,33 @@ await pool.query(`
             ON DELETE CASCADE
 );
 `);
+
+for (const customer of customers) {
+    await pool.query(
+        `INSERT INTO CUSTOMERS (id, first_name, last_name, birth_date, state, email) 
+         VALUES ($1, $2, $3, $4, $5, $6)`,
+        [
+            customer.id,
+            customer.firstName,
+            customer.lastName,
+            customer.birthDate,
+            customer.state,
+            customer.email
+        ]
+    );
+}
+
+for (const purchase of purchases) {
+    await pool.query(
+        `INSERT INTO purchases (id, customer_id, product, price, date, status)
+         VALUES ($1, $2, $3, $4, $5, $6)`,
+        [
+            purchase.id,
+            purchase.customerId,
+            purchase.product,
+            purchase.price,
+            purchase.date,
+            purchase.status
+        ]
+    );
+}
