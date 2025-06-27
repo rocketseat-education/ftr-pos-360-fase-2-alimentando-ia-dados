@@ -1,6 +1,51 @@
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI } from '@google/genai';
+import { Pool } from 'pg';
 import dotenv from 'dotenv';
 dotenv.config();
+
+function getDaysSincePurchase(purchase){
+    const today = new Date();
+    const diffInMilis = today - purchase.date;
+
+    return Math.floor(diffInMilis / 1000 / 60 / 60 / 24);
+}
+
+function getCustomerAge(customer){
+    const today = new Date();
+    const diffWithBirthDate = today - customer.birth_date;
+
+    return (new Date(diffWithBirthDate)).getFullYear() - 1970;
+}
+
+const pool = new Pool({
+    host: 'localhost',
+    user: 'postgres',      // coloque o usuário do seu banco
+    password: 'root',    // coloque a senha do seu banco
+    database: 'customer-chat'
+});
+const customer = (await pool.query("SELECT * FROM customers WHERE id = '5481dd9e-0f80-47e1-915c-395346312a05'")).rows[0];
+
+const purchases = (await pool.query(
+    "SELECT * FROM purchases WHERE customer_id = '5481dd9e-0f80-47e1-915c-395346312a05'"
+)).rows;
+
+let purchasesString = "";
+
+for(let purchase of purchases){
+    purchasesString += `
+    - ${purchase.product}:
+        - Preço: ${purchase.price}
+        - Status: ${purchase.status}
+        - Dias desde a compra: ${getDaysSincePurchase(purchase)} 
+    `
+}
+
+console.log(purchasesString);
+
+ //     id: '5481dd9e-0f80-47e1-915c-395346312a05',
+ //     first_name: 'Maria Júlia',
+ //     id: '513f0e2e-2fb0-4e7b-be3e-86312a0b0b08',
+ //     first_name: 'Isabela',
 
 const genai = new GoogleGenAI({ apiKey: process.env.GOOGLE_GEMINI_API_KEY });
 
@@ -32,21 +77,23 @@ Você não pode realizar nenhuma ação a não ser responder perguntas sobre os 
 cliente necessite de alguma ação por parte da empresa (como contestar compras), direcione-o ao suporte.
 
 <CLIENTE>
-Nome: Arthur
-email: arthur.kamienski@gmail.com
-idade: 40 anos
-estado: Minas Gerais
+Nome: ${customer.first_name} ${customer.last_name}
+email: ${customer.email}
+idade: ${getCustomerAge(customer)}
+estado: ${customer.state}
 
 <COMPRAS>
-Skate maneiro, 200 reais, dias desde o pedido: 5, status: cancelado
+${purchasesString}
 `;
 
-const response = await genai.models.generateContent({
-    model: 'gemini-2.0-flash',
-    config: {
-        systemInstruction: systemInstruction,
-    },
-    contents: "olá, gostaria de saber qual foi a minha ultima compra e o valor dela"
-});
+console.log(systemInstruction);
 
-console.log(response.candidates[0].content.parts[0].text);
+// const response = await genai.models.generateContent({
+//     model: 'gemini-2.0-flash',
+//     config: {
+//         systemInstruction: systemInstruction,
+//     },
+//     contents: "olá, gostaria de saber qual foi a minha ultima compra e o valor dela"
+// });
+// 
+// console.log(response.candidates[0].content.parts[0].text);
