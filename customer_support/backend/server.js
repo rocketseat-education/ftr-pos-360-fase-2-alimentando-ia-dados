@@ -12,6 +12,8 @@ const port = 3000;
 app.post("/support", async (req, res) => {
     const email = req.body.email;
     const message = req.body.message;
+    
+    //const email = "Silas_Silva@bol.com.br";
 
     const customerInfo = await getCustomerInfo(email);
     const response = await getAIResponse(customerInfo, message);
