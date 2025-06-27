@@ -18,7 +18,7 @@ function getCustomerAge(customer) {
     return (new Date(diffWithBirthDate)).getFullYear() - 1970;
 }
 
-function getPurchasesString() {
+function getPurchasesString(purchases) {
     let purchasesString = "";
 
     for (let purchase of purchases) {
