@@ -4,7 +4,7 @@ import "./AIMessage.css";
 import ThinkingIndicator from "../ThinkingIndicator/ThinkingIndicator";
 
 export default function AIMessage({
-  text,
+  text = "",
   isThinking,
   finishTypingCallback,
   isLastMessage,

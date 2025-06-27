@@ -8,5 +8,7 @@ export default async function getResponse(prompt) {
       email: "Silas_Silva@bol.com.br",
       message: prompt
     })
-  }).then(r => r.json).then(o => o.response);
+  })
+  .then(r => r.json()) // <- tem que ser .json()
+  .then(o => o.response);
 }
