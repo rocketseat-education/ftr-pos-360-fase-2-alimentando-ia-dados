@@ -28,6 +28,9 @@
     "test": ""
   },
   "dependencies": {
-    "cheerio": "^1.1.0"
+    "@chroma-core/default-embed": "^0.1.8",
+    "cheerio": "^1.1.0",
+    "chromadb": "^3.0.5",
+    "chromadb-default-embed": "^2.14.0"
   }
 }
