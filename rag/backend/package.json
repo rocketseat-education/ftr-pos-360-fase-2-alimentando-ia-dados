@@ -28,14 +28,10 @@
     "test": ""
   },
   "dependencies": {
-    "@langchain/community": "^0.3.47",
-    "@langchain/google-genai": "^0.2.14",
-    "@langchain/langgraph": "^0.3.6",
-    "cheerio": "^1.1.0",
-    "chromadb": "^2.4.6",
+    "@google/genai": "^1.7.0",
     "cors": "^2.8.5",
-    "dotenv": "^17.0.1",
+    "dotenv": "^16.6.1",
     "express": "^5.1.0",
-    "langchain": "^0.3.29"
+    "pg": "^8.16.3"
   }
 }

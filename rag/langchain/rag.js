@@ -68,8 +68,18 @@ const StateAnnotation = Annotation.Root({
 
 const graph = new StateGraph(StateAnnotation)
     .addNode("retrieve", retrieve)
-    .addConditionalEdges("generate", generate)
+    .addNode("generate", generate)
     .addEdge("__start__", "retrieve")
     .addEdge("retrieve", "generate")
     .addEdge("generate", "__end__")
     .compile();
+
+
+
+
+async function getAnswer(question){
+    const inputs = { question: question };
+    return graph.invoke(inputs).then(state => state.answer.content);
+}
+
+export { getAnswer };
