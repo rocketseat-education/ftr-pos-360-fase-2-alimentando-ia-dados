@@ -1,7 +1,10 @@
 import { CheerioWebBaseLoader } from "@langchain/community/document_loaders/web/cheerio";
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 import { GoogleGenerativeAIEmbeddings } from "@langchain/google-genai";
+import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { Chroma } from "@langchain/community/vectorstores/chroma";
+import { pull } from "langchain/hub";
+
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -28,7 +31,39 @@ const embeddings = new GoogleGenerativeAIEmbeddings({
 });
 
 const vectorStore = new Chroma(embeddings, {
-    collectionName:"javascript-book-gemini-embeddings"
+    collectionName: "javascript-book-gemini-embeddings"
 });
 
 // vectorStore.addDocuments(allSplits);
+
+const promptTemplate = await pull("rlm/rag-prompt");
+
+const llm = new ChatGoogleGenerativeAI({
+    model: "gemini-2.0-flash",
+    apiKey: process.env.GOOGLE_GEMINI_API_KEY,
+});
+
+async function retrieve(state) {
+    const retrievedDocs = await vectorStore.similaritySearch(state.question);
+    return { docs: retrievedDocs }
+}
+
+async function generate(state) {
+    const docs = state.docs.map(doc => doc.pageContent).join("\n");
+    const prompt = await promptTemplate.invoke({
+        question: state.question,
+        context: docs
+    });
+    const response = await llm.invoke(prompt);
+
+    return response;
+}
+
+const retrievedDocs = await retrieve({
+    question: "como funciona uma variável?"
+});
+
+console.log(generate({
+    question: "como funciona uma variável?",
+    docs: retrievedDocs
+}));
