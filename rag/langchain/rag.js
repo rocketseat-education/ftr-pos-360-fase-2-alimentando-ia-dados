@@ -4,6 +4,7 @@ import { GoogleGenerativeAIEmbeddings } from "@langchain/google-genai";
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { Chroma } from "@langchain/community/vectorstores/chroma";
 import { pull } from "langchain/hub";
+import { StateGraph, Annotation } from "@langchain/langgraph";
 
 import dotenv from 'dotenv';
 dotenv.config();
@@ -56,14 +57,19 @@ async function generate(state) {
     });
     const response = await llm.invoke(prompt);
 
-    return response;
+    return { answer: response };
 }
 
-const retrievedDocs = await retrieve({
-    question: "como funciona uma variável?"
+const StateAnnotation = Annotation.Root({
+    question: Annotation,
+    docs: Annotation,
+    answer: Annotation
 });
 
-console.log(generate({
-    question: "como funciona uma variável?",
-    docs: retrievedDocs
-}));
+const graph = new StateGraph(StateAnnotation)
+    .addNode("retrieve", retrieve)
+    .addConditionalEdges("generate", generate)
+    .addEdge("__start__", "retrieve")
+    .addEdge("retrieve", "generate")
+    .addEdge("generate", "__end__")
+    .compile();
